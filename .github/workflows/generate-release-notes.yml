@@ -44,8 +44,15 @@ jobs:
             const projectId = 1; // ID del proyecto
             const viewId = 2; // ID de la vista
 
+            const lista = await octokit.rest.issues.listForRepo({
+                owner: owner,
+                repo: repo,
+                per_page: 2
+            });
+            console.log("Lista de issues:", lista.data);
+
             // Obtener las issues desde la vista del proyecto
-            const issues = await octokit.request('GET /users/{owner}/projects/{project_id}/views/{view_id}/items', {
+            const issues = await octokit.request('GET /repos/{owner}/projects/{project_id}/views/{view_id}/items', {
               owner,
               project_id: projectId,
               view_id: viewId
