@@ -32,12 +32,6 @@ jobs:
           const MyOctokit = Octokit.plugin(restEndpointMethods);
           const octokit = new MyOctokit({ auth: process.env.GITHUB_TOKEN });
 
-          console.log("Generating release notes...");
-          console.log("GITHUB_TOKEN:", process.env.GITHUB_TOKEN);
-          console.log("octokit:", octokit);
-          console.log("octokit.rest:", octokit.rest);
-          console.log("octokit.rest.issues:", octokit.rest.issues);
-
           (async () => {
             const owner = "belcebus";
             const repo = "release-notes-tests";
@@ -47,15 +41,13 @@ jobs:
             const lista = await octokit.rest.issues.listForRepo({
                 owner: owner,
                 repo: repo,
-                per_page: 2
+                per_page: 10,
             });
             console.log("Lista de issues:", lista.data);
 
             // Obtener las issues desde la vista del proyecto
-            const issues = await octokit.request('GET /repos/{owner}/projects/{project_id}/views/{view_id}/items', {
-              owner,
-              project_id: projectId,
-              view_id: viewId
+            const issues = await octokit.request('GET /projects/{project_id}/items', {
+              project_id: projectId
             });
             console.log("Issues:", issues.data);
           })();
