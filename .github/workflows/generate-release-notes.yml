@@ -32,6 +32,12 @@ jobs:
           const MyOctokit = Octokit.plugin(restEndpointMethods);
           const octokit = new MyOctokit({ auth: process.env.GITHUB_TOKEN });
 
+          console.log("Generating release notes...");
+          console.log("GITHUB_TOKEN:", process.env.GITHUB_TOKEN);
+          console.log("octokit:", octokit);
+          console.log("octokit.rest:", octokit.rest);
+          console.log("octokit.rest.issues:", octokit.rest.issues);
+
           (async () => {
             const owner = "belcebus";
             const repo = "release-notes-tests";
@@ -44,5 +50,6 @@ jobs:
               project_id: projectId,
               view_id: viewId
             });
+            console.log("Issues:", issues.data);
           })();
           EOF
