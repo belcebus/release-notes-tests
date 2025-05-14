@@ -13,9 +13,9 @@ jobs:
 
       # 2. Configurar Node.js para usar octokit
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '22' # Cambia a la versión de Node.js que necesites
 
       # 3. Instalar dependencias necesarias
       - name: Install dependencies
