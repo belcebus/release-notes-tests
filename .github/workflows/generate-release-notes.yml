@@ -1,13 +1,67 @@
 name: Generate Release Notes
 
 on:
-    workflow_dispatch:
+  workflow_dispatch: # Permite ejecutar el workflow manualmente
 
 jobs:
-    generate-release:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-            - name: echo
-              run: echo "Generating release notes..."
+  generate-release:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout del código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Configurar Node.js para usar octokit
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # 3. Instalar dependencias necesarias
+      - name: Install dependencies
+        run: npm install @octokit/core @octokit/plugin-rest-endpoint-methods
+
+      # 4. Generar las release notes
+      - name: Generate release notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node <<EOF
+          const { Octokit } = require("@octokit/core");
+          const { restEndpointMethods } = require("@octokit/plugin-rest-endpoint-methods");
+          const MyOctokit = Octokit.plugin(restEndpointMethods);
+          const octokit = new MyOctokit({ auth: process.env.GITHUB_TOKEN });
+
+          (async () => {
+            const owner = "belcebus";
+            const repo = "release-notes-tests";
+            const projectId = 1; // ID del proyecto
+            const viewId = 2; // ID de la vista
+
+            // Obtener las issues desde la vista del proyecto
+            const issues = await octokit.request('GET /users/{owner}/projects/{project_id}/views/{view_id}/items', {
+              owner,
+              project_id: projectId,
+              view_id: viewId
+            });
+
+            // Generar el contenido del archivo RELEASE_NOTES.md
+            let releaseNotes = "# Release Notes\n\n";
+            releaseNotes += issues.data.items.map(issue => {
+              return `- [#${issue.content.number}](${issue.content.html_url}) ${issue.content.title}`;
+            }).join("\n");
+
+            // Escribir el archivo RELEASE_NOTES.md
+            const fs = require("fs");
+            fs.writeFileSync("RELEASE_NOTES.md", releaseNotes);
+
+            // Actualizar el README.md para incluir el enlace
+            const readmePath = "README.md";
+            let readmeContent = fs.readFileSync(readmePath, "utf8");
+            const releaseNotesLink = "\n\n[Release Notes](./RELEASE_NOTES.md)";
+            if (!readmeContent.includes(releaseNotesLink)) {
+              readmeContent += releaseNotesLink;
+              fs.writeFileSync(readmePath, readmeContent);
+            }
+          })();
+          EOF
