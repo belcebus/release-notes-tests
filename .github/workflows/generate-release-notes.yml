@@ -44,24 +44,5 @@ jobs:
               project_id: projectId,
               view_id: viewId
             });
-
-            // Generar el contenido del archivo RELEASE_NOTES.md
-            let releaseNotes = "# Release Notes\n\n";
-            releaseNotes += issues.data.items.map(issue => {
-              return `- [#${issue.content.number}](${issue.content.html_url}) ${issue.content.title}`;
-            }).join("\n");
-
-            // Escribir el archivo RELEASE_NOTES.md
-            const fs = require("fs");
-            fs.writeFileSync("RELEASE_NOTES.md", releaseNotes);
-
-            // Actualizar el README.md para incluir el enlace
-            const readmePath = "README.md";
-            let readmeContent = fs.readFileSync(readmePath, "utf8");
-            const releaseNotesLink = "\n\n[Release Notes](./RELEASE_NOTES.md)";
-            if (!readmeContent.includes(releaseNotesLink)) {
-              readmeContent += releaseNotesLink;
-              fs.writeFileSync(readmePath, readmeContent);
-            }
           })();
           EOF
