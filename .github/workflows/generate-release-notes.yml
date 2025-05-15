@@ -31,4 +31,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-notes-${{ github.event.inputs.version || 'v1.0.0' }}
-          path: RELEASE_NOTES_V*.md
+          path: RELEASE_NOTES_${{ github.event.inputs.version || 'v1.0.0' }}.md
