@@ -20,7 +20,7 @@ Para ejecutar el script de release notes localmente, sigue estos pasos:
 3. **Ejecuta el script usando argumentos por línea de comandos**:
 
     ```bash
-    python .github/actions/generate-release-notes/generate_release_notes.py \
+    python .github/actions/generate-release-notes/src/main.py \
       --project-url https://github.com/users/belcebus/projects/1 \
       --version v1.0.0 \
       --token ghp_tu_token_personal
