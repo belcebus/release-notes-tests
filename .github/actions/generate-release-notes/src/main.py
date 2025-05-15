@@ -48,3 +48,11 @@ if __name__ == '__main__':
     except Exception as e:
         write_error_to_summary(f"Error al generar el markdown: {e}")
         sys.exit(1)
+    try:
+        readme_path = os.path.join(os.path.dirname(__file__), '..', 'README.md')
+        update_readme_with_release_notes(readme_path, filename)
+    except Exception as e:
+        write_error_to_summary(f"Error al actualizar el README: {e}")
+        sys.exit(1)
+    print("\033[92mProceso completado con éxito.\033[0m")
+    sys.exit(0)
