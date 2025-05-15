@@ -55,6 +55,11 @@ if __name__ == '__main__':
             readme_path = os.path.join(os.path.dirname(__file__), '..', '..', '..','..', 'README.md')
         else:
             readme_path = os.path.join(os.path.dirname(__file__), '..', 'README.md')
+        print(f"\033[94mPath del README:\033[0m {readme_path}")
+        if not os.path.exists(readme_path):
+            write_error_to_summary(f"Error: El README no existe en la ruta especificada: {readme_path}")
+            sys.exit(1)
+        print(f"\033[92mActualizando el README con el enlace a las release notes...\033[0m")
         update_readme_with_release_notes(readme_path, filename)
     except Exception as e:
         write_error_to_summary(f"Error al actualizar el README: {e}")
