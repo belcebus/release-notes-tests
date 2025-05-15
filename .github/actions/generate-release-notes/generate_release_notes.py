@@ -193,6 +193,12 @@ def get_project_items(project_id, field_ids, version, token):
                   number
                   title
                   url
+                  labels(first: 10) {
+                    nodes {
+                      name
+                      color
+                    }
+                  }
                 }
               }
               fieldValues(first: 20) {
@@ -246,6 +252,9 @@ def get_project_items(project_id, field_ids, version, token):
         version_value = None
         status_value = None
         linked_prs = []
+        labels = []
+        if issue.get('labels') and issue['labels'].get('nodes'):
+            labels = [label['name'] for label in issue['labels']['nodes']]
         for field in item['fieldValues']['nodes']:
             # Campo Version
             if (
@@ -283,7 +292,8 @@ def get_project_items(project_id, field_ids, version, token):
                 'title': issue['title'],
                 'url': issue['url'],
                 'status': status_value,
-                'linked_prs': linked_prs
+                'linked_prs': linked_prs,
+                'labels': labels
             })
 
     return filtered_issues
@@ -300,12 +310,13 @@ def generate_markdown(issues, version, repo_name):
 
     for issue in issues:
         # Línea principal de la issue
-        md.append(f"- [Issue #{issue['number']}]({issue['url']}): {issue['title']} _(Estado: {issue['status']})_")
+        label_str = f" [labels: {', '.join(issue['labels'])}]" if issue.get('labels') else ""
+        md.append(f"- [Issue #{issue['number']}]({issue['url']}): {issue['title']} _(Estado: {issue['status']})_{label_str}")
         # Lista anidada de PRs asociadas
         if issue['linked_prs']:
             for pr in issue['linked_prs']:
-                estado_pr = "MERGEADA" if pr['merged'] else "ABIERTA"
-                md.append(f"  - [PR #{pr['number']}]({pr['url']}) ({pr['repo']}) [{estado_pr}]")
+                emoji_pr = "✅" if pr['merged'] else "🟡"
+                md.append(f"  - [PR #{pr['number']}]({pr['url']}) ({pr['repo']}) {emoji_pr}")
     # Lista de repositorios únicos de las PRs
     repos = sorted({pr['repo'] for issue in issues for pr in issue['linked_prs']})
     if repos:
