@@ -1,0 +1,23 @@
+name: 'Generate Release Notes'
+description: 'Genera un documento de release notes en markdown a partir de un GitHub Project'
+inputs:
+  project_url:
+    description: 'URL del tablero de GitHub Projects'
+    required: true
+  version:
+    description: 'Versión a filtrar'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Instalar dependencias Python
+      shell: bash
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+
+    - name: Ejecutar script de generación de release notes
+      shell: bash
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+        INPUT_PROJECT_URL: ${{ inputs.project_url }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: python ${{ github.action_path }}/generate_release_notes.py
