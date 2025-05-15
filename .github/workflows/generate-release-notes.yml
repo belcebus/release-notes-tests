@@ -36,7 +36,7 @@ jobs:
       - name: Guardar cambios en el readme
         run: |
           git config --local user.name "github-actions"
-          git config --local user.email "
+          git config --local user.email "belcebus@gmail.com"
             git add RELEASE_NOTES_${{ github.event.inputs.version || 'v1.0.0' }}.md
             git commit -m "[ci skip] Add release notes for version ${{ github.event.inputs.version || 'v1.0.0' }}"
             git push
