@@ -17,7 +17,7 @@ runs:
     - name: Ejecutar script de generación de release notes
       shell: bash
       env:
-        TOKEN: ${{ secrets.TOKEN }}
+        TOKEN: ${{ env.TOKEN }}
         INPUT_PROJECT_URL: ${{ inputs.project_url }}
         INPUT_VERSION: ${{ inputs.version }}
       run: python ${{ github.action_path }}/generate_release_notes.py
