@@ -59,7 +59,121 @@ def get_inputs():
         'project_number': project_number
     }
 
+def github_graphql(query, variables, token):
+    """
+    Realiza una consulta GraphQL a la API de GitHub.
+    :param query: La consulta GraphQL a ejecutar.
+    :type query: str
+    :param variables: Las variables para la consulta GraphQL.
+    :type variables: dict
+    :param token: El token de acceso para autenticar la solicitud.
+    :type token: str
+    :return: La respuesta de la API de GitHub.
+    :rtype: dict
+    """
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.post(
+        'https://api.github.com/graphql',
+        json={'query': query, 'variables': variables},
+        headers=headers
+    )
+    data = response.json()
+    if 'errors' in data:
+        raise Exception(data['errors'])
+    return data['data']
+
+def get_project_id(project_type, owner, project_number, token):
+    """
+    Obtiene el ID global del proyecto a partir del tipo, owner y número.
+    """
+    query = '''
+    query($login: String!, $number: Int!) {
+      %s(login: $login) {
+        projectV2(number: $number) {
+          id
+        }
+      }
+    }
+    ''' % ('user' if project_type == 'users' else 'organization')
+    variables = {'login': owner, 'number': project_number}
+    data = github_graphql(query, variables, token)
+    node = data['user' if project_type == 'users' else 'organization']
+    if not node or not node['projectV2']:
+        raise Exception('No se encontró el proyecto con esos datos.')
+    return node['projectV2']['id']
+
+def get_project_fields(project_id, token):
+    """
+    Obtiene los campos del proyecto y devuelve un diccionario con los IDs de los campos relevantes.
+    """
+    query = '''
+    query($projectId: ID!) {
+      node(id: $projectId) {
+        ... on ProjectV2 {
+          fields(first: 50) {
+            nodes {
+              __typename
+              ... on ProjectV2FieldCommon {
+                id
+                name
+                dataType
+              }
+              ... on ProjectV2SingleSelectField {
+                id
+                name
+                options {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    '''
+    variables = {'projectId': project_id}
+    data = github_graphql(query, variables, token)
+    fields = data['node']['fields']['nodes']
+
+    # Buscar los campos relevantes por nombre
+    field_ids = {}
+    for field in fields:
+        if field.get('name') == 'Version':
+            field_ids['version'] = field['id']
+            # Guardar opciones de versión si las necesitas para hacer filtrado
+            field_ids['version_options'] = field.get('options', [])
+        elif field.get('name') == 'Status':
+            field_ids['status'] = field['id']
+        elif field.get('name') == 'Linked pull requests':
+            field_ids['linked_prs'] = field['id']
+    return field_ids
+
+
 # Ejemplo de uso:
 if __name__ == '__main__':
     inputs = get_inputs()
-    print("Inputs validados correctamente:", inputs)
+    token = os.environ.get('TOKEN')
+    if not token:
+        write_error_to_summary("Error: TOKEN no está definido en el entorno.")
+        sys.exit(1)
+    try:
+        project_id = get_project_id(
+            inputs['project_type'],
+            inputs['owner'],
+            inputs['project_number'],
+            token
+        )
+        print("ID del proyecto:", project_id)
+    except Exception as e:
+        write_error_to_summary(f"Error al obtener el ID del proyecto: {e}")
+        sys.exit(1)
+    try:
+        field_ids = get_project_fields(project_id, token)
+        print("IDs de campos relevantes:", field_ids)
+    except Exception as e:
+        write_error_to_summary(f"Error al obtener los campos del proyecto: {e}")
+        sys.exit(1)
