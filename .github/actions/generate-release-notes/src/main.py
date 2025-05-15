@@ -1,7 +1,8 @@
 from utils import get_inputs, write_error_to_summary
 from github_api import get_project_id, get_project_fields, get_project_items
-from markdown_generator import generate_markdown, save_markdown, add_to_summary
+from markdown_generator import generate_markdown, save_markdown, add_to_summary, update_readme_with_release_notes
 import sys
+import os
 
 if __name__ == '__main__':
     inputs = get_inputs()
@@ -49,7 +50,11 @@ if __name__ == '__main__':
         write_error_to_summary(f"Error al generar el markdown: {e}")
         sys.exit(1)
     try:
-        readme_path = os.path.join(os.path.dirname(__file__), '..', 'README.md')
+        # Si la ejecución es local hay que utilizar otro path
+        if os.environ.get('GITHUB_ACTIONS') != 'true':
+            readme_path = os.path.join(os.path.dirname(__file__), '..', '..', '..','..', 'README.md')
+        else:
+            readme_path = os.path.join(os.path.dirname(__file__), '..', 'README.md')
         update_readme_with_release_notes(readme_path, filename)
     except Exception as e:
         write_error_to_summary(f"Error al actualizar el README: {e}")
