@@ -1,0 +1,34 @@
+name: Generate release notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_url:
+        description: 'URL del tablero de GitHub Projects'
+        required: true
+      version:
+        description: 'Versión a filtrar'
+        required: true
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generar release notes
+        uses: ./.github/actions/generate-release-notes
+        with:
+          project_url: ${{ github.event.inputs.project_url || 'https://github.com/users/belcebus/projects/1' }}
+          version: ${{ github.event.inputs.version || 'v1.0.0' }}
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Subir release notes como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES_V*.md

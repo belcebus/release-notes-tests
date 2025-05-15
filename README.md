@@ -4,40 +4,34 @@ Test repository to test release notes automation creation
 ## Ejecución local
 Para ejecutar el script de release notes localmente, sigue estos pasos:
 
-1. **Crea un archivo `.env`** (opcional, pero recomendado para no exponer tu token en el terminal):
-
-   ```bash
-   TOKEN=ghp_tu_token_personal
-   INPUT_PROJECT_URL=https://github.com/users/belcebus/projects/1
-   INPUT_VERSION=v1.0.0
-   ```
-
-2. **Carga las variables de entorno antes de ejecutar el script**:
+1. **Crea y activa un entorno virtual de Python** (recomendado):
 
     ```bash
-    export $(cat .env | xargs)
-    python .github/actions/generate-release-notes/generate_release_notes.py
+    python3 -m venv venv
+    source venv/bin/activate
     ```
 
-    O bien, puedes exportarlas manualmente:
+2. **Instala las dependencias usando el fichero `requirements.txt`**:
 
     ```bash
-    export TOKEN=ghp_tu_token_personal
-    export INPUT_PROJECT_URL=https://github.com/users/belcebus/projects/1
-    export INPUT_VERSION=v1.0.0
-    python .github/actions/generate-release-notes/generate_release_notes.py
+    pip install -r .github/actions/generate-release-notes/requirements.txt
     ```
 
-3. **Asegúrate de tener instaladas las dependencias**:
+3. **Ejecuta el script usando argumentos por línea de comandos**:
 
     ```bash
-    npm install
+    python .github/actions/generate-release-notes/generate_release_notes.py \
+      --project-url https://github.com/users/belcebus/projects/1 \
+      --version v1.0.0 \
+      --token ghp_tu_token_personal
     ```
+
+    Si no pasas algún argumento, el script intentará obtenerlo de las variables de entorno correspondientes.
 
 4. **Nota sobre el summary**:
 
-    Si quieres simular la escritura en el summary, puedes exportar también la variable:
+    Si quieres simular la escritura en el summary, puedes exportar la variable antes de ejecutar el script:
 
     ```bash
-    export SUMMARY=tu_summary_aquí
+    export GITHUB_STEP_SUMMARY=tu_summary_aquí
     ```
